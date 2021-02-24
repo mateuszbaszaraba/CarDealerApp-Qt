@@ -2,6 +2,8 @@
 #define CARDEALER_H
 
 #include <QWidget>
+#include <QLineEdit>
+#include <QTextEdit>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class CarDealer; }
@@ -13,9 +15,12 @@ class CarDealer : public QWidget
 
 public:
     CarDealer(QWidget *parent = nullptr);
-    ~CarDealer();
+
 
 private:
-    Ui::CarDealer *ui;
+    QLineEdit *brandLine;
+    QLineEdit *modelLine;
+    QLineEdit *engineLine;
+    QTextEdit *descriptionText;
 };
 #endif // CARDEALER_H
