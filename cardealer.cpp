@@ -35,6 +35,12 @@ CarDealer::CarDealer(QWidget *parent)
 
     addButton = new QPushButton(tr("&Add new"));
     addButton->show();
+    editButton = new QPushButton(tr("&Edit"));
+    editButton->show();
+    editButton->setEnabled(false);
+    removeButton = new QPushButton(tr("&Remove"));
+    removeButton->show();
+    removeButton->setEnabled(false);
     submitButton = new QPushButton(tr("&Submit"));
     submitButton->hide();
     cancelButton = new QPushButton(tr("&Cancel"));
@@ -42,6 +48,10 @@ CarDealer::CarDealer(QWidget *parent)
 
     connect(addButton, &QPushButton::clicked,
             this, &CarDealer::addCar);
+    connect(editButton, &QPushButton::clicked,
+            this, &CarDealer::editCar);
+    connect(removeButton, &QPushButton::clicked,
+            this, &CarDealer::removeCar);
     connect(submitButton, &QPushButton::clicked,
             this, &CarDealer::submitCar);
     connect(cancelButton, &QPushButton::clicked,
@@ -49,6 +59,8 @@ CarDealer::CarDealer(QWidget *parent)
 
     QHBoxLayout *buttonLayout1 = new QHBoxLayout;
     buttonLayout1->addWidget(addButton);
+    buttonLayout1->addWidget(editButton);
+    buttonLayout1->addWidget(removeButton);
     buttonLayout1->addWidget(submitButton);
     buttonLayout1->addWidget(cancelButton);
 
@@ -89,6 +101,7 @@ CarDealer::CarDealer(QWidget *parent)
     setLayout(mainLayout);
     setWindowTitle("CarDealer");
 
+
 }
 
 void CarDealer::addCar()
@@ -105,16 +118,15 @@ void CarDealer::addCar()
     engineLine->clear();
     descriptionText->clear();
 
-    indexLine->setReadOnly(false);
-    brandLine->setReadOnly(false);
-    brandLine->setFocus(Qt::OtherFocusReason);
-    modelLine->setReadOnly(false);
-    engineLine->setReadOnly(false);
-    descriptionText->setReadOnly(false);
 
-    addButton->setEnabled(false);
-    submitButton->show();
-    cancelButton->show();
+    updateInterface(AddingMode);
+}
+
+void CarDealer::editCar()
+{
+    oldIndex = indexLine->text();
+    oldBrand = brandLine->text();
+    updateInterface(EditingMode);
 }
 
 void CarDealer::submitCar()
@@ -125,44 +137,47 @@ void CarDealer::submitCar()
     QString engine = modelLine->text();
     QString description = descriptionText->toPlainText();
 
-    if(index.isEmpty() || brand.isEmpty() || model.isEmpty() || engine.isEmpty() || description.isEmpty())
+    if(currentMode == AddingMode)
     {
-        QMessageBox::information(this, tr("Field is empty!"),
-                                 tr("Please enter all informations"));
-        return;
+        if(index.isEmpty() || brand.isEmpty())
+        {
+            QMessageBox::information(this, tr("Field is empty!"),
+                                     tr("Please enter all informations"));
+            return;
+        }
+
+        if(!cars.contains(index))
+        {
+            cars.insert(index, brand);
+            QMessageBox::information(this, tr("Add Successful"),
+                                     tr("Car was added successfully"));
+        } else {
+            QMessageBox::information(this, tr("Add Unsuccessful"),
+                                     tr("Car was not added"));
+            return;
+        }
+
+    } else if(currentMode == EditingMode)
+    {
+        if(oldIndex != index) {
+            if(cars.contains(index)) {
+                QMessageBox::information(this, tr("Edit Successful"),
+                                         tr("Done"));
+                cars.remove(oldIndex);
+                cars.insert(index, brand);
+            } else {
+                QMessageBox::information(this, tr("Error"),
+                                         tr("This car already exist"));
+            }
+        } else if (oldBrand!=brand){
+            QMessageBox::information(this, tr("Edit Successful"),
+                                     tr("Done"));
+            cars[index] = brand;
+        }
     }
 
-    if(!cars.contains(index))
-    {
-        cars.insert(index, brand);
-        QMessageBox::information(this, tr("Add Successful"),
-                                 tr("Car was added successfully"));
-    } else {
-        QMessageBox::information(this, tr("Add Unsuccessful"),
-                                 tr("Car was not added"));
-        return;
-    }
+    updateInterface(NavigationMode);
 
-    if(cars.isEmpty())
-    {
-        indexLine->clear();
-        brandLine->clear();
-        modelLine->clear();
-        engineLine->clear();
-        descriptionText->clear();
-    }
-
-    indexLine->setReadOnly(true);
-    brandLine->setReadOnly(true);
-    modelLine->setReadOnly(true);
-    engineLine->setReadOnly(true);
-    descriptionText->setReadOnly(true);
-
-    submitButton->hide();
-    cancelButton->hide();
-    addButton->setEnabled(true);
-    previousButton->setEnabled(cars.size() > 1);
-    nextButton->setEnabled(cars.size() > 1);
 }
 
 void CarDealer::cancel()
@@ -173,15 +188,32 @@ void CarDealer::cancel()
     engineLine->setText(oldEngine);
     descriptionText->setText(oldDescription);
 
-    indexLine->setReadOnly(true);
-    brandLine->setReadOnly(true);
-    modelLine->setReadOnly(true);
-    engineLine->setReadOnly(true);
-    descriptionText->setReadOnly(true);
+    updateInterface(NavigationMode);
+}
 
-    addButton->setEnabled(true);
-    submitButton->hide();
-    cancelButton->hide();
+void CarDealer::removeCar()
+{
+    QString index = indexLine->text();
+    QString brand = brandLine->text();
+
+    if (cars.contains(index)) {
+
+           int button = QMessageBox::question(this,
+               tr("Confirm Remove"),
+               tr("Are you sure you?"),
+               QMessageBox::Yes | QMessageBox::No);
+
+           if (button == QMessageBox::Yes) {
+
+               previous();
+               cars.remove(index);
+
+               QMessageBox::information(this, tr("Remove Successful"),
+                   tr("Has been removed from your address book."));
+           }
+       }
+
+       updateInterface(NavigationMode);
 }
 
 void CarDealer::previous()
@@ -217,7 +249,55 @@ void CarDealer::next()
     brandLine->setText(i.value());
 }
 
+void CarDealer::updateInterface(Mode mode)
+{
+    currentMode = mode;
 
+    switch (currentMode) {
+
+        case EditingMode:
+        case AddingMode:
+
+            indexLine->setReadOnly(false);
+            indexLine->setFocus(Qt::OtherFocusReason);
+            brandLine->setReadOnly(false);
+
+            addButton->setEnabled(false);
+            editButton->setEnabled(false);
+            removeButton->setEnabled(false);
+
+            nextButton->setEnabled(false);
+            previousButton->setEnabled(false);
+
+            submitButton->show();
+            cancelButton->show();
+            break;
+
+       case NavigationMode:
+
+            if(cars.isEmpty())
+            {
+                indexLine->clear();
+                brandLine->clear();
+            }
+
+            indexLine->setReadOnly(true);
+            brandLine->setReadOnly(true);
+
+            addButton->setEnabled(true);
+
+            int num = cars.size();
+            editButton->setEnabled(num >= 1);
+            removeButton->setEnabled(num >= 1);
+            nextButton->setEnabled(num >= 1);
+            previousButton->setEnabled(num >= 1);
+
+            submitButton->hide();
+            cancelButton->hide();
+            break;
+
+    }
+}
 
 
 

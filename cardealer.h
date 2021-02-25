@@ -19,6 +19,8 @@ public:
 
 public slots:
     void addCar();
+    void editCar();
+    void removeCar();
     void submitCar();
     void cancel();
     void next();
@@ -32,6 +34,8 @@ private:
     QTextEdit *descriptionText;
 
     QPushButton *addButton;
+    QPushButton *editButton;
+    QPushButton *removeButton;
     QPushButton *submitButton;
     QPushButton *cancelButton;
 
@@ -45,5 +49,9 @@ private:
     QString oldDescription;
 
     QMap<QString, QString> cars;
+    enum Mode { NavigationMode, AddingMode, EditingMode };
+
+    void updateInterface(Mode mode);
+    Mode currentMode;
 };
 #endif // CARDEALER_H
