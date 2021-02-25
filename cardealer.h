@@ -21,23 +21,29 @@ public slots:
     void addCar();
     void submitCar();
     void cancel();
+    void next();
+    void previous();
 
 private:
     QLineEdit *brandLine;
     QLineEdit *modelLine;
     QLineEdit *engineLine;
+    QLineEdit *indexLine;
     QTextEdit *descriptionText;
 
     QPushButton *addButton;
     QPushButton *submitButton;
     QPushButton *cancelButton;
 
+    QPushButton *nextButton;
+    QPushButton *previousButton;
+
+    QString oldIndex;
     QString oldBrand;
     QString oldModel;
     QString oldEngine;
     QString oldDescription;
 
-    QMap<int, QString> cars;
-    int index {};
+    QMap<QString, QString> cars;
 };
 #endif // CARDEALER_H
