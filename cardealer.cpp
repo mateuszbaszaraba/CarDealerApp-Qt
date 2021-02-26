@@ -31,10 +31,13 @@ CarDealer::CarDealer(QWidget *parent)
     descriptionText->setReadOnly(true);
 
 
+    dialog = new FindDialog(this);
 
 
     addButton = new QPushButton(tr("&Add new"));
     addButton->show();
+    findButton = new QPushButton(tr("&Find"));
+    findButton->setEnabled(false);
     editButton = new QPushButton(tr("&Edit"));
     editButton->show();
     editButton->setEnabled(false);
@@ -56,9 +59,12 @@ CarDealer::CarDealer(QWidget *parent)
             this, &CarDealer::submitCar);
     connect(cancelButton, &QPushButton::clicked,
             this, &CarDealer::cancel);
+    connect(findButton, &QPushButton::clicked,
+            this, &CarDealer::findCar);
 
     QHBoxLayout *buttonLayout1 = new QHBoxLayout;
     buttonLayout1->addWidget(addButton);
+    buttonLayout1->addWidget(findButton);
     buttonLayout1->addWidget(editButton);
     buttonLayout1->addWidget(removeButton);
     buttonLayout1->addWidget(submitButton);
@@ -287,6 +293,7 @@ void CarDealer::updateInterface(Mode mode)
             addButton->setEnabled(true);
 
             int num = cars.size();
+            findButton->setEnabled(num >= 1);
             editButton->setEnabled(num >= 1);
             removeButton->setEnabled(num >= 1);
             nextButton->setEnabled(num > 1);
@@ -299,7 +306,27 @@ void CarDealer::updateInterface(Mode mode)
     }
 }
 
+void CarDealer::findCar()
+{
+    dialog->show();
 
+    if(dialog->exec() == QDialog::Accepted)
+    {
+        QString carIndex = dialog->getFindText();
+
+        if (cars.contains(carIndex))
+        {
+            indexLine->setText(carIndex);
+            brandLine->setText(cars.value(carIndex));
+        } else {
+            QMessageBox::information(this, tr("not found"),
+                                     tr("It is not available"));
+            return;
+        }
+    }
+
+    updateInterface(NavigationMode);
+}
 
 
 

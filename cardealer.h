@@ -5,6 +5,7 @@
 #include <QLineEdit>
 #include <QTextEdit>
 #include <QPushButton>
+#include <finddialog.h>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class CarDealer; }
@@ -22,6 +23,7 @@ public slots:
     void editCar();
     void removeCar();
     void submitCar();
+    void findCar();
     void cancel();
     void next();
     void previous();
@@ -37,6 +39,7 @@ private:
     QPushButton *editButton;
     QPushButton *removeButton;
     QPushButton *submitButton;
+    QPushButton *findButton;
     QPushButton *cancelButton;
 
     QPushButton *nextButton;
@@ -50,6 +53,7 @@ private:
 
     QMap<QString, QString> cars;
     enum Mode { NavigationMode, AddingMode, EditingMode };
+    FindDialog *dialog;
 
     void updateInterface(Mode mode);
     Mode currentMode;

@@ -1,15 +1,24 @@
 #ifndef FINDDIALOG_H
 #define FINDDIALOG_H
 
-#include <QWidget>
+#include <QDialog>
+#include <QPushButton>
+#include <QLineEdit>
 
-class FindDialog : public QWidget
+class FindDialog : public QDialog
 {
     Q_OBJECT
 public:
-    explicit FindDialog(QWidget *parent = nullptr);
+    FindDialog(QWidget *parent = nullptr);
+    QString getFindText();
 
-signals:
+public slots:
+    void findClicked();
+
+private:
+    QPushButton *findButton;
+    QLineEdit *lineEdit;
+    QString findText;
 
 };
 
