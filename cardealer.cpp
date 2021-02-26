@@ -289,8 +289,8 @@ void CarDealer::updateInterface(Mode mode)
             int num = cars.size();
             editButton->setEnabled(num >= 1);
             removeButton->setEnabled(num >= 1);
-            nextButton->setEnabled(num >= 1);
-            previousButton->setEnabled(num >= 1);
+            nextButton->setEnabled(num > 1);
+            previousButton->setEnabled(num > 1);
 
             submitButton->hide();
             cancelButton->hide();
