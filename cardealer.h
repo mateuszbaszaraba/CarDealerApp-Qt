@@ -27,6 +27,8 @@ public slots:
     void cancel();
     void next();
     void previous();
+    void saveToFile();
+    void loadFromFile();
 
 private:
     QLineEdit *brandLine;
@@ -44,6 +46,9 @@ private:
 
     QPushButton *nextButton;
     QPushButton *previousButton;
+
+    QPushButton *loadButton;
+    QPushButton *saveButton;
 
     QString oldIndex;
     QString oldBrand;

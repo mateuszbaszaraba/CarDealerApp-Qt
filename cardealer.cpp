@@ -3,6 +3,7 @@
 #include <QLabel>
 #include <QGridLayout>
 #include <QMessageBox>
+#include <QFileDialog>
 
 CarDealer::CarDealer(QWidget *parent)
     : QWidget(parent)
@@ -48,6 +49,10 @@ CarDealer::CarDealer(QWidget *parent)
     submitButton->hide();
     cancelButton = new QPushButton(tr("&Cancel"));
     cancelButton->hide();
+    loadButton = new QPushButton(tr("&Load..."));
+    loadButton->setToolTip(tr("Load cars from file"));
+    saveButton = new QPushButton(tr("&Save"));
+    saveButton->setToolTip(tr("Save to file"));
 
     connect(addButton, &QPushButton::clicked,
             this, &CarDealer::addCar);
@@ -61,6 +66,10 @@ CarDealer::CarDealer(QWidget *parent)
             this, &CarDealer::cancel);
     connect(findButton, &QPushButton::clicked,
             this, &CarDealer::findCar);
+    connect(loadButton, &QPushButton::clicked,
+            this, &CarDealer::loadFromFile);
+    connect(saveButton, &QPushButton::clicked,
+            this, &CarDealer::saveToFile);
 
     QHBoxLayout *buttonLayout1 = new QHBoxLayout;
     buttonLayout1->addWidget(addButton);
@@ -69,6 +78,8 @@ CarDealer::CarDealer(QWidget *parent)
     buttonLayout1->addWidget(removeButton);
     buttonLayout1->addWidget(submitButton);
     buttonLayout1->addWidget(cancelButton);
+    buttonLayout1->addWidget(loadButton);
+    buttonLayout1->addWidget(saveButton);
 
 
 
@@ -328,9 +339,68 @@ void CarDealer::findCar()
     updateInterface(NavigationMode);
 }
 
+void CarDealer::saveToFile()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+                                                    tr("Save cars"),
+                                                    tr("Cars (*.carrs);;All files(*)"));
+    if(fileName.isEmpty())
+        return;
+    else
+    {
+        QFile file(fileName);
+        if(!file.open(QIODevice::WriteOnly))
+        {
+            QMessageBox::information(this, tr("Unable to save file"),
+                                     file.errorString());
+            return;
+        }
 
+        QDataStream out(&file);
+        out.setVersion(QDataStream::Qt_4_5);
+        out << cars;
 
+    }
+}
 
+void CarDealer::loadFromFile()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open cars"),
+                                                    tr("Cars (*.carrs);;All files(*)"));
+
+    if(fileName.isEmpty())
+        return;
+    else
+    {
+        QFile file(fileName);
+
+        if(!file.open(QIODevice::ReadOnly))
+        {
+            QMessageBox::information(this, tr("unable to open file"),
+                                     file.errorString());
+            return;
+        }
+
+        QDataStream in(&file);
+        in.setVersion(QDataStream::Qt_4_5);
+        cars.clear();
+        in >> cars;
+
+        if(cars.isEmpty())
+        {
+            QMessageBox::information(this, tr("no cars in file"),
+                                     tr("file you are attempting to open contains no cars"));
+        }
+        else
+        {
+            QMap<QString, QString>::iterator i = cars.begin();
+            indexLine->setText(i.key());
+            brandLine->setText(i.value());
+        }
+    }
+    updateInterface(NavigationMode);
+}
 
 
 
